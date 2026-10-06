@@ -98,9 +98,12 @@ do_strip_keep_mini_debug_info_linux() {
     "${CLANG_BIN}/llvm-strip" --strip-all --keep-section=.ARM.attributes --remove-section=.comment "${infile}" -o "${outfile}.tmp" || fail=true
 
     if [ -z $fail ]; then
-        "${CREATE_MINIDEBUGINFO}" "${infile}" "${outfile}.mini_debuginfo.xz"
-        "${CLANG_BIN}/llvm-objcopy" --add-section .gnu_debugdata="${outfile}.mini_debuginfo.xz" "${outfile}.tmp"
-        rm -f "${outfile}.mini_debuginfo.xz"
+        # create_minidebuginfo crashes under qemu-user (Illegal instruction) on arm64 host;
+        # skip mini debug info generation (debug-data only, no functional impact).
+        # "${CREATE_MINIDEBUGINFO}" "${infile}" "${outfile}.mini_debuginfo.xz"
+        # "${CLANG_BIN}/llvm-objcopy" --add-section .gnu_debugdata="${outfile}.mini_debuginfo.xz" "${outfile}.tmp"
+        # rm -f "${outfile}.mini_debuginfo.xz"
+        :
     else
         cp -f "${infile}" "${outfile}.tmp"
     fi
